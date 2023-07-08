@@ -31,7 +31,6 @@
         <file>res/SelectorScreen_StartAdventure_Highlight.png</file>
         <file>res/pvz.png</file>
         <file>res/pvz.ico</file>
-        <file>res/Background.jpg</file>
         <file>res/MaChao.png</file>
         <file>res/ZhangFei.png</file>
         <file>res/mu1.png</file>
@@ -43,10 +42,33 @@
         <file>res/QuitWindow.png</file>
         <file>res/noButtonForPeach.png</file>
         <file>res/yesButtonForPeach.png</file>
+        <file>res/choose_warrior_bgm.wav</file>
+        <file>res/background.jpg</file>
+        <file>res/mute.png</file>
+        <file>res/sound.png</file>
+        <file>res/rulebutton.png</file>
+        <file>res/okButtion.png</file>
+        <file>res/rule.png</file>
+        <file>res/lose_health.wav</file>
+        <file>res/be_peached.wav</file>
+        <file>res/be_slashed.wav</file>
+        <file>res/Sabotage.wav</file>
+        <file>res/dodge.wav</file>
+        <file>res/chooseWarrior.wav</file>
+        <file>res/first.wav</file>
+        <file>res/CaoAng.png</file>
+        <file>res/CaoCao.png</file>
+        <file>res/DiaoChan.png</file>
+        <file>res/backpic.png</file>
+        <file>res/Theft.png</file>
+        <file>res/AllOutOfNone.png</file>
+        <file>res/ArrowRain.png</file>
+        <file>res/HappinessDrown.png</file>
+        <file>res/Sabotage.png</file>
+        <file>res/SavageAssault.png</file>
     </qresource>
     <qresource prefix="/playscene">
         <file>res/battelbgm.wav</file>
-        <file>res/Background.jpg</file>
         <file>res/YinShaofeng.png</file>
         <file>res/QinYiming.png</file>
         <file>res/GuoShen.png</file>
@@ -79,6 +101,13 @@
         <file>res/player1Turn.png</file>
         <file>res/player2Turn.png</file>
         <file>res/be_asked_for_peach_bg.png</file>
+        <file>res/AIGivecards.png</file>
+        <file>res/AIThrowcards.png</file>
+        <file>res/Background.jpg</file>
+        <file>res/playscene_bgm.wav</file>
+        <file>res/gameEnd.wav</file>
+        <file>res/caocao.jpg</file>
+        <file>res/caocaoname.png</file>
     </qresource>
     <qresource prefix="/player_character_card"/>
     <qresource prefix="/other">
