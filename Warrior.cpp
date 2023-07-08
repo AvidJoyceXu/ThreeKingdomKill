@@ -18,6 +18,9 @@ Warrior::Warrior(QString name, int hp, int player, QWidget *parent)
     this->setStyleSheet(address);
     //setFixedSize(picture.size());
 
+    true_card_num = 0;
+    card_count = 0;
+
     //根据玩家决定武将牌摆放位置
     if(player==0) move(960 - this->width(), 720 - this->height());
     else if(player == 1) move(0, 200);
@@ -32,6 +35,11 @@ Warrior::Warrior(QString name, int hp, int player, QWidget *parent)
     ccard_num_pic->setPixmap(card_num_pic);
     ccard_num_pic->move(this->width() - ccard_num_pic->width(),0);
     ccard_num_pic->show();
+
+    if(player == 0) {
+        hp += 1;
+        totalhp +=1;
+    }
 
     //设置血量
     QPixmap mypic(":/other/res/hp"+QString::number(hp)+".png"); //单个血量的图片，现在是豌豆，建议设成阴阳鱼 //已经改成血豆豆了，不同血量颜色不一样
@@ -79,11 +87,11 @@ void Warrior::sethp(int nowhp){
 
 //设置武将卡牌数为某一值
 void Warrior::setCardNum(int cardnum){
-    QPixmap mypic(":/card_num/res/" + QString::number(cardnum) + ".png");
+    QPixmap mypi(":/card_num/res/" + QString::number(cardnum) + ".png");
     ccard_num_pic->hide();
     ccard_num_pic = new QLabel(this);
-    ccard_num_pic->resize(mypic.size());
-    ccard_num_pic->setPixmap(mypic);
+    ccard_num_pic->resize(mypi.size());
+    ccard_num_pic->setPixmap(mypi);
     ccard_num_pic->move(this->width() - ccard_num_pic->width(),0);
     ccard_num_pic->show();
 
@@ -109,7 +117,9 @@ void Warrior::setFarmer(){
 
 void Warrior::crowned_as_landlord(){
     slash_limit++;
-    hp++;totalhp++;
+    hp++;
+    totalhp++;
+    //sethp(hp);
     talent.push_back(new Cheerful(this));//增加地主技“飞扬”“跋扈”
     talent.push_back(new Bossy(this));
 }
@@ -178,8 +188,11 @@ void Warrior::flush_card_before_throwing(){
     }
 }
 void Warrior::lose_life(int num){//卖血将会有多态
-     hp -= num;
-     sethp(hp);
+    bgm = new QSound(":/menu/res/lose_health.wav");
+    bgm->setLoops(1);
+    bgm->play();
+    hp -= num;
+    sethp(hp);
     //if(hp<=0){//进入濒死
         emit Dying();
         //ask_for_peach();//向所有人求救
@@ -197,22 +210,30 @@ void Warrior::be_slashed(Warrior * enemy){//被杀
     bo = false;
     for(int i=0;i<card_count;i++){
         if(card[i]->name == "Dodge" && card[i]->isdel == false){
-            connect(card[i],&Cards::clicked,[=](){
-                card[i]->Action();
-                dodged = true;
-                true_card_num--;
-                setCardNum(true_card_num);
-                card[i]->isdel = true;
-                //rather than: players[cur_player_idx];
-                card[i]->move(400, 300);
-                card[i]->show();
-                AIDecision::stop();
-                card[i]->hide();
-                return;
-            });
+            card[i]->Action();
+            true_card_num--;
+            setCardNum(true_card_num);
+            card[i]->isdel = true;
+            //qDebug()<<"player"<<player<<"  card  "<<players[player]->card[cardi]->name<<players[player]->card[cardi]->isdel<<endl;
+            //rather than: players[cur_player_idx];
+            card[i]->move(400, 300);
+            card[i]->show();
+            AIDecision::stop();
+            card[i]->hide();
+            //把这张牌删了
+            //重新设置每张牌的位置
+            //为什么要这样：如果在这直接del了那张牌，前面的connect就会出bug
+            for(int j=0,k=0; j<card_count; j++){
+                if(card[j]->isdel==false){
+                    card[j]->move(67+110*k,560);
+                    card[j]->show();
+                    k++;
+                }
+            }
+            return;
         }
     }
-   }
+  }
   else{
       dodged = AIDecision::be_asked_for_dodge(this);
 
@@ -229,7 +250,7 @@ void Warrior::be_assaulted(){//被南蛮入侵
     if(!is_AI) {
         slashed = false;
          bo = false;
-       for(int i=0;i<card_count;i++){
+       /*for(int i=0;i<card_count;i++){
             if(card[i]->name == "Slash"){
                 connect(card[i],&Cards::clicked,[=](){
                     card[i]->Action();
@@ -238,7 +259,7 @@ void Warrior::be_assaulted(){//被南蛮入侵
                 });
             }
             if(bo) break;
-        }
+        }*/
       }
    else {
         slashed = AIDecision::be_asked_for_slash(this);
@@ -256,7 +277,7 @@ void Warrior::be_asked_for_peach(Warrior * partner){
         give_peach = false;
         bo = false;
 
-        QPixmap ask(":/playscene/res/be_asked_for_peach_bg.png");
+        /*QPixmap ask(":/playscene/res/be_asked_for_peach_bg.png");
         QLabel * cask = new QLabel(this);
         cask->resize(ask.size());
         cask->setPixmap(ask);
@@ -302,33 +323,12 @@ void Warrior::be_asked_for_peach(Warrior * partner){
 
 
                 });
-            }
+            }*/
 
         }
 
 
-        //位置估计得调
-        /*ShapedWindow *option = new ShapedWindow(this,":/playscene/res/be_asked_for_peach_bg.png");
-        option->move((this->width()-option->width())*0.8, (this->height()-option->height())*0.5);
-        MyPushButton *yes = new MyPushButton(option,true,":/menu/res/yesButtonForPeach.png");
-        connect(yes, &MyPushButton::clicked, [=](){
-            give_peach = true;
-            delete option;
-        });
-        yes->move((110, 130);
-        MyPushButton *no = new MyPushButton(option,true,":/menu/res/noButtonForPeach.png");
-        connect(no, &MyPushButton::clicked, [=](){
-            give_peach = false;
-            delete option;
-        });
-        no->move((110, 195);
-        QLabel *WarriorName = new QLabel(partner->name, option);
-        QFont ft;
-        ft.setPointSize(19);
-        WarriorName->setFont(ft);
-        WarriorName->move(80, 100);
-        option->show();*/
-    }
+
     else{
         give_peach = AIDecision::be_asked_for_peach(this,partner);
         if(give_peach){
@@ -351,6 +351,26 @@ MaChao::MaChao(int player, QWidget *parent):Warrior("MaChao", 4, player, parent)
     totalhp = 4;
     slash_limit = 1;
     talent.push_back(new IronHorse(this));
+}
+CaoCao::CaoCao(int player, QWidget *parent):Warrior("CaoCao",4,player,parent){
+    name = "CaoCao";
+    hp = 4;
+    totalhp = 4;
+    slash_limit = 1;
+    //talent.push_back();
+}
+CaoAng::CaoAng(int player, QWidget *parent):Warrior("CaoAng",4,player,parent){
+    hp = 4;
+    totalhp = 4;
+    slash_limit = 1;
+    name = "CaoAng";
+}
+DiaoChan::DiaoChan(int player, QWidget *parent):Warrior("DiaoChan",4,player,parent){
+    hp = 4;
+    totalhp = 4;
+    slash_limit = 1;
+    name = "DiaoChan";
+    //talent.push_back();
 }
 
 //武将相关的动画，优质宝可以试试
