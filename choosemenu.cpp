@@ -13,7 +13,7 @@
 ChooseMenu::ChooseMenu(QString h1name, QString h2name, QWidget *parent)
     : QWidget(parent){
     //选人界面的bgm，可以调整
-    bgm=new QSound(":/menu/res/menu.wav"); //音频文件路径
+    bgm=new QSound(":/menu/res/chooseWarrior.wav"); //音频文件路径
     bgm->setLoops(-1); //设置无限循环bgm
     bgm->play(); //播放
     //背景设置
@@ -75,6 +75,22 @@ ChooseMenu::ChooseMenu(QString h1name, QString h2name, QWidget *parent)
         delete m2;
         delete m3;
         emit choosemultiple3();
+    });
+
+    MyPushButton* sound=new MyPushButton(this,false,":/menu/res/mute.png");
+    //sound->setFixedSize(QSize(50, 50));
+    sound->move(20, 40);
+
+    connect(sound, &MyPushButton::clicked, [=](){
+        bgm->play();
+    });
+
+    MyPushButton* mute=new MyPushButton(this,false,":/menu/res/sound.png");
+    //mute->setFixedSize(QSize(50, 50));
+    mute->move(100,40);
+
+    connect(mute, &MyPushButton::clicked, [=](){
+        bgm->stop();
     });
 
 }

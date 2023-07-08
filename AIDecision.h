@@ -5,6 +5,7 @@
 
 class AIDecision{
 public:
+    static QSound * bgm;
     //询问是否使用技能
     static void be_asked_use_talent(Warrior* self,Warrior* p1,Warrior* p2);
     //被求桃 true给 false不给

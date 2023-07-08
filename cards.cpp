@@ -16,7 +16,7 @@ Cards::Cards(QString name, bool hide, QWidget *parent)
     setMask(picture.mask()); //设置遮罩
     setStyleSheet("QPushButton{border:0px;}"); //调整无边框
     QPainter painter(&picture); //绘制图像
-    //调整图片大小，0.7似乎是参数
+    //调整图片大小
     QPixmap picc(name);
     picc=picc.scaled(picture.size()*0.7,Qt::KeepAspectRatio);
     //绘制卡牌图像
@@ -28,8 +28,6 @@ Cards::Cards(QString name, bool hide, QWidget *parent)
     mask=new QLabel(this); //遮罩是一个QLabel类的对象（这个类一般用来创建图片）
     mask->resize(maskpic.size()); //调整大小
     mask->setStyleSheet("border-image:url(:/playscene/res/mask.png);"); //不知道是干啥的
-
-
     mask->hide(); //初始隐藏遮罩
 }
 
@@ -66,6 +64,9 @@ Nanman::Nanman(bool hide, QWidget *parent) : Cards("Nanman", hide, parent){}
 Wanjian::Wanjian(bool hide, QWidget *parent) : Cards("Wanjian", hide, parent){}
 */
 void Peach::Action(Warrior * partner){
+    bgm = new QSound(":/menu/res/be_peached.wav");
+    bgm->setLoops(1);
+    bgm->play();
     if(!partner){
         if (owner->hp < owner->totalhp){//才能对自己使用桃
             owner->be_peached(owner);
@@ -76,9 +77,16 @@ void Peach::Action(Warrior * partner){
     }
 }
 void Slash::Action(Warrior * enemy){
+    bgm = new QSound(":/menu/res/be_slashed.wav");
+    bgm->setLoops(1);
+    bgm->play();
     owner->slash(enemy);
 }
-void Dodge::Action(Warrior * enemy){}
+void Dodge::Action(Warrior * enemy){
+        bgm = new QSound(":/menu/res/dodge.wav");
+        bgm->setLoops(1);
+        bgm->play();
+}
 
 Strategy::Strategy(QString name, bool hide, QWidget *parent):Cards(name, hide, parent) { kind = 1; }
 
@@ -94,12 +102,18 @@ void AllOutOfNone::Action(Warrior * enemy ){//ask for 无懈可击
 }
 
 Sabotage::Sabotage(QString f, bool hide, QWidget* parent,int p):Strategy("Sabotage",hide,parent){
+
     face = f,point = p;
     name = "Sabotage";
 }
 void Sabotage::Action(Warrior * enemy ){
+
+    bgm = new QSound(":/menu/res/Sabotage.wav");
+    bgm->setLoops(1);
+    bgm->play();
+
     //click for target
-    Warrior * target;
+    Warrior * target = enemy;
     //ask for 无懈可击
     //自己是不是还有无懈可击
     bool canceled;
@@ -135,7 +149,7 @@ void HappinessDrown::Action(Warrior * enemy){
     if(!target->fate_tell_zone[1])//对方判定区没有乐不思蜀，则：
         target->fate_tell_zone[1] = this;//把乐不思蜀置入目标的判定区
 }
-SupplyShortage::SupplyShortage(QString f,bool hide, QWidget* parent, int p):Strategy("SuppliShortage", hide, parent){
+SupplyShortage::SupplyShortage(QString f,bool hide, QWidget* parent, int p):Strategy("SupplyShortage", hide, parent){
     face = f,point = p;
     name = "SupplyShortage";
 }

@@ -26,6 +26,7 @@ public:
     QString face;//花色
     QPixmap picture; //卡牌的图像
     QLabel * mask; //卡牌的遮罩，用来盖住用不了的牌
+    QSound * bgm;
     int point;//点数
     int kind;//0 -- basic, 1 -- strategy, 2 -- ware
     bool require_target;
@@ -196,8 +197,9 @@ public:
     QString name; //武将的名字，加载图像时也有用
     QPixmap picture; //武将的图片
     QPixmap card_num_pic;//牌数图片
-    QLabel *hppic[6]; //生命值图像，这是一张图片重复多次的形式
+    QLabel *hppic[7]; //生命值图像，这是一张图片重复多次的形式
     QLabel *ccard_num_pic;//牌数图像
+    QSound * bgm;
     int hp; //当前血量
     int totalhp; //血量上限
     bool haveweapon = false; //是否装备了武器，目前没用
@@ -279,6 +281,18 @@ class MaChao:public Warrior{
 public:
     MaChao(int player, QWidget *parent=0);
     //void slash(Warrior * enemy);
+};
+class CaoCao:public Warrior{
+public:
+    CaoCao(int player,QWidget * parent=0);
+};
+class CaoAng:public Warrior{
+public:
+    CaoAng(int player, QWidget *parent=0);
+};
+class DiaoChan:public Warrior{
+public:
+    DiaoChan(int player, QWidget *parent=0);
 };
 
 #endif // HEROES_AND_CARDS_BASE_H

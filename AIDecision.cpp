@@ -4,6 +4,8 @@
 #include <QDebug>
 using namespace std;
 
+QSound * AIDecision::bgm;
+
 //询问是否使用技能
 void AIDecision::be_asked_use_talent(Warrior* self,Warrior* p1,Warrior* p2){
     for(QVector<Talent*>::iterator i = self->talent.begin(); i != self->talent.end(); i++){
@@ -50,6 +52,9 @@ bool AIDecision::be_asked_for_peach(Warrior* self,Warrior* other){
         self->card[i]->move(600, 190);
     }
     self->card[i]->show();
+    bgm = new QSound(":/menu/res/be_peached.wav");
+    bgm->setLoops(1);
+    bgm->play();
     stop();
     self->card[i]->hide();
     return true;
@@ -76,6 +81,7 @@ bool AIDecision::be_asked_for_dodge(Warrior* self){
                 self->card[i]->move(600, 190);
             }
             self->card[i]->show();
+            self->card[i]->Action();
             stop();
             self->card[i]->hide();
             return true;
@@ -98,8 +104,12 @@ bool AIDecision::be_asked_for_slash(Warrior* self){
                 self->card[i]->move(600, 190);
             }
             self->card[i]->show();
+            bgm = new QSound(":/menu/res/be_slashed.wav");
+            bgm->setLoops(1);
+            bgm->play();
             stop();
             self->card[i]->hide();
+
             return true;
         }
     }
