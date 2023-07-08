@@ -25,6 +25,7 @@ signals:
     void optionclicked(); //单击选项菜单的信号
     void chooseperson(); //
     void chooseMultiple();//单击选人界面（开始游戏）的信号
+    void ruleclicked();
 public slots:
 };
 

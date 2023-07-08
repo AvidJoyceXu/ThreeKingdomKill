@@ -49,6 +49,17 @@ MainWindow::MainWindow(QWidget *parent)
         option->show();
     });
 
+    connect(ui->menu,&MyMenu::ruleclicked,[=](){
+        ShapedWindow* option=new ShapedWindow(this,":/menu/res/rule.png");
+        option->move(200,(this->height()-option->height())*0.5);
+        MyPushButton* back=new MyPushButton(option,true,":/menu/res/yesButton2.png");
+        connect(back,&MyPushButton::clicked,[=](){
+            delete option;
+        });
+        back->move((option->width()-back->width())*0.5,225);
+        option->show();
+    });
+
  /* connect(ui->menu,&MyMenu::play,[=](){
         game=new playscene;
         ui->stackedWidget->addWidget(game);
@@ -116,9 +127,9 @@ MainWindow::MainWindow(QWidget *parent)
         QString p[5];
         p[0] = "ZhangFei";
         p[1] = "MaChao";
-        p[2] = "ZhangFei";
-        p[3] = "MaChao";
-        p[4] = "ZhangFei";
+        p[2] = "CaoCao";
+        p[3] = "CaoAng";
+        p[4] = "DiaoChan";
         srand(time(0));
         int a = rand()%5;
         int b = rand()%5;
@@ -127,7 +138,7 @@ MainWindow::MainWindow(QWidget *parent)
         while(c == b || c == a) c = rand()%5;
         int d = rand()%5;
         while(d == b || d == a || d == c) d = rand()%5;
-        //int a = 0, b = 1, c = 2, d = 3;
+        a = 0, b = 1, c = 2, d = 3;
         //创建choose界面
         choose = new ChooseMenu(p[a],p[b]);
         //将choose界面添加到ui里
@@ -147,7 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(choose,&ChooseMenu::choosehero1,[=](){
             //创建游戏界面
             game = new playscene(p[a], p[c], p[d],landlord);
-            qDebug()<<a<<"   "<<c<<"   "<<"d"<<endl;
+            qDebug()<<a<<"   "<<c<<"   "<<d<<endl;
             ui->stackedWidget->addWidget(game);
             ui->stackedWidget->setCurrentIndex(2);
             //如果游戏结束（发出mainmenu信号），则退回到开始界面
