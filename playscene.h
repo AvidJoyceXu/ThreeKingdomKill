@@ -49,7 +49,7 @@ public:
     void delcard(); //player删除掉所有弃过的牌
     void winning(bool if_player_win); //player是否胜利
     void usecard(Cards *card); //player用一张牌card
-    void throwcard(Cards *card); //player弃一张牌card
+    void throwcard(int cardi, int player); //player弃一张牌card
     void ask_for_peach();
     void sleep_forever(Warrior * player);//挂了   //sleep forever 好形象 好好笑
     void checkdying();

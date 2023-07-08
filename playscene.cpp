@@ -43,29 +43,43 @@ void playscene::DeckInit(){//向牌堆中加入卡牌，并切牌
     }
     for(int i=0;i<3;i++){
         Deck.enqueue(new Sabotage("spade",false,this));
+        qDebug()<<"Sabotage"<<endl;
     }
     Deck.enqueue(new Sabotage("heart",false,this));
+    qDebug()<<"Sabotage"<<endl;
     for(int i=0;i<2;i++){
         Deck.enqueue(new Sabotage("club",false,this));
+        qDebug()<<"Sabotage"<<endl;
     }
     for(int i=0;i<3;i++){
         Deck.enqueue(new Theft("spade",false,this));
+        qDebug()<<"Theft"<<endl;
     }
     for(int i=0;i<2;i++){
         Deck.enqueue(new Theft("square",false,this));
+        qDebug()<<"Theft"<<endl;
     }
     for(int i=0;i<4;i++){
         Deck.enqueue(new AllOutOfNone("heart",false,this));
+        qDebug()<<"AllOutOfNone"<<endl;
     }
     Deck.enqueue(new HappinessDrown("spade",false,this));
+    qDebug()<<"HappinessDrown"<<endl;
     Deck.enqueue(new HappinessDrown("heart",false,this));
+    qDebug()<<"HappinessDrown"<<endl;
     Deck.enqueue(new HappinessDrown("club",false,this));
-    //Deck.enqueue(new SupplyShortage("spade",false,this));
-    //Deck.enqueue(new SupplyShortage("club",false,this));
+    qDebug()<<"HappinessDrown"<<endl;
+
+    Deck.enqueue(new SupplyShortage("spade",false,this));
+    Deck.enqueue(new SupplyShortage("club",false,this));
     for(int i=0;i<2;i++){
-        Deck.enqueue(new SavageAssault("spade",false,this));}
+        Deck.enqueue(new SavageAssault("spade",false,this));
+        qDebug()<<"SavageAssault"<<endl;
+    }
     Deck.enqueue(new SavageAssault("club",false,this));
+    qDebug()<<"SavageAssault"<<endl;
     Deck.enqueue(new ArrowRain("heart",false,this));
+    qDebug()<<"ArrowRain"<<endl;
     random_device rd;
     shuffle(Deck.begin(),Deck.end(),rd);//切牌
 
@@ -81,26 +95,60 @@ void playscene::draw_cards(Warrior * player,int num){
         }
         player->card_count++;//AI和玩家都需要在摸牌后：牌数改变
         player->true_card_num++;
+        player->setCardNum(player->true_card_num);//显示牌数改变
+
         Deck.pop_front();
     }
-    player->setCardNum(player->true_card_num);//显示牌数改变
+    qDebug()<<"player = "<<player->player<<"setCardNum"<<player->true_card_num<<endl;
 }
 playscene::playscene(QString name1, QString name2, QString name3, int landlord, QWidget *parent)
     : QWidget(parent),landlordNum(landlord){
 
     setFixedSize(960,720);
     //游戏bgm
-    battelbgm=new QSound(":/playscene/res/battelbgm.wav",this);
+    battelbgm=new QSound(":/playscene/res/playscene_bgm.wav",this);
     battelbgm->setLoops(-1);
     battelbgm->play();
+    MyPushButton* sound=new MyPushButton(this,false,":/menu/res/mute.png");
+    //sound->setFixedSize(QSize(50, 50));
+    sound->move(20, 40);
+
+    connect(sound, &MyPushButton::clicked, [=](){
+        battelbgm->play();
+    });
+
+    MyPushButton* mute=new MyPushButton(this,false,":/menu/res/sound.png");
+    //mute->setFixedSize(QSize(50, 50));
+    mute->move(100,40);
+
+    connect(mute, &MyPushButton::clicked, [=](){
+        battelbgm->stop();
+    });
 
     MyPushButton *gohome = new MyPushButton(this,true,":/playscene/res/endturn.png");
     gohome->move(0, 450);
     gohome->show();
+
+
     //设置返回菜单事件
-    connect(gohome, &MyPushButton::clicked, [=](){//结束回合的槽函数
-        delete gohome;
-        emit mainmenu();
+    //结束回合的槽函数
+    connect(gohome, &MyPushButton::clicked, [=](){
+        ShapedWindow *back = new ShapedWindow(this,":/menu/res/backpic.png");
+        back->move(260, 195);
+        MyPushButton *yes = new MyPushButton(back,true,":/menu/res/yesButton.png");
+        MyPushButton *no = new MyPushButton(back,true,":/menu/res/CancelButton.png");
+        connect(yes, &MyPushButton::clicked, [=](){
+            delete back;
+            delete gohome;
+            emit mainmenu();
+        });
+        connect(no, &MyPushButton::clicked, [=](){
+            delete back;
+        });
+        yes->move(110, 130);
+        no->move(110, 195);
+        back->show();
+        //delete gohome;
     });
 
 
@@ -112,16 +160,26 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
         sethero(name1,0);sethero(name2,1);sethero(name3,2);
         //sethero函数的功能：用name对应武将初始化playscene::players[no(int)],同时修改is_AI(bool)的值
         players[landlord]->crowned_as_landlord();
+        players[landlord]->sethp(players[landlord]->hp);
         cur_player_idx = landlord;
         for(int i = 0; i < 3; i++){
-            draw_cards(players[i], 4);
+            draw_cards(players[i], 2);
             if(i == landlordNum){
                 players[i]->setLandLord();
+                players[i]->id = 0;
+                players[i]->is_landlord = true;
             }
             else{
                 players[i]->setFarmer();
+                players[i]->id = i;
+                players[i]->is_landlord = false;
             }
         }
+
+        for(int i = 0; i < 3; i++){
+            qDebug()<<i<<" life = "<<players[i]->hp<<endl;
+        }
+
         emit gamestart();//xly批注：这个while循环是三人轮流出牌的主进程//yyx 不能写while
     });
 
@@ -151,6 +209,11 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
         cturn2->resize(turn2.size());
         cturn2->setPixmap(turn2);
 
+        QPixmap give_pic(":/playscene/res/AIGivecards.png");
+        QLabel * cgivepic = new QLabel(this);
+        cgivepic->resize(give_pic.size());
+        cgivepic->setPixmap(give_pic);
+
         if(cur_player_idx == 0){
             cturn0->move(870,485);
             cturn0->show();
@@ -158,11 +221,15 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
         else if(cur_player_idx == 1){
             cturn1->move(145,310);
             cturn1->show();
+            cgivepic->move(145,345);
+            cgivepic->show();
             stop();
         }
         else if(cur_player_idx == 2){
             cturn2->move(770,200);
             cturn2->show();
+            cgivepic->move(805,200);
+            cgivepic->show();
             stop();
         }
 
@@ -188,13 +255,16 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
             }
             else if(cur_player_idx == 1){
                 cturn1->hide();
+                cgivepic->hide();
             }
             else if(cur_player_idx == 2){
                 cturn2->hide();
+                cgivepic->hide();
             }
             delete cturn0;
             delete cturn1;
             delete cturn2;
+            delete cgivepic;
             emit madthrowcard();
         }
 
@@ -204,7 +274,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
             //gamestart的槽函数结束
             MyPushButton *endturn = new MyPushButton(this,true,":/playscene/res/endturn_givecards.png");
             endturn->move(this->width()-endturn->width() - 100, 450);
-            endturn->show();
+            //endturn->show();
             //设置结束出牌回合事件
             connect(endturn, &MyPushButton::clicked, [=](){//结束回合的槽函数
                  //删掉用过的牌
@@ -217,13 +287,16 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                  }
                  else if(cur_player_idx == 1){
                      cturn1->hide();
+                     cgivepic->hide();
                  }
                  else if(cur_player_idx == 2){
                      cturn2->hide();
+                     cgivepic->hide();
                  }
                  delete cturn0;
                  delete cturn1;
                  delete cturn2;
+                 delete cgivepic;
                  //进入弃牌阶段
                  emit madthrowcard();
             });
@@ -239,20 +312,20 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                             if(cur_player->hp < cur_player->totalhp){
                                 cur_player->hp += 1;
                                 cur_player->sethp(cur_player->hp);
-                                throwcard(cur_card);
+                                throwcard(i,cur_player_idx);
                             }
                         }
 
                         if(cur_card->name == "SavageAssault"){
-                             throwcard(cur_card);//应该有动画//AOE不需要判断目标
+                             throwcard(i,cur_player_idx);//应该有动画//AOE不需要判断目标
                              SavageAssaultAction();
                         }
                         else if (cur_card->name == "ArrowRain"){
-                            throwcard(cur_card);//应该有动画
+                            throwcard(i,cur_player_idx);//应该有动画
                             ArrowRainAction();
                         }
                         else if (cur_card->name == "AllOutOfNone"){
-                            throwcard(cur_card);//应该有动画
+                            throwcard(i,cur_player_idx);//应该有动画
                             draw_cards(cur_player,2);
                         }
                         else //单体锦囊（杀）需要判断目标
@@ -262,10 +335,10 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                                     cur_card->Action(players[j]);//鼠标选中目标
                                     //Card::Action(Warrior * w)会调用w的be_ed系列函数，需要覆盖
                                     //cur_card->isdel = true;
-                                    throwcard(cur_card);
+                                    throwcard(i,cur_player_idx);
                                 });
                             }*/
-                            //throwcard(cur_card);
+                            //throwcard(i,cur_player_idx);
 
                             MyPushButton *use1 = new MyPushButton(this,true,":/playscene/res/user.png");
                             use1->move(0, 400);
@@ -275,7 +348,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                             use2->show();
                             //选择对ai1使用
                             connect(use1, &MyPushButton::clicked, [=](){
-                                 throwcard(cur_card);
+                                 throwcard(i,cur_player_idx);
                                  cur_card->Action(players[1]);
                                  for(int i = 0; i < cur_player->card_count; i++){
                                      if(cur_player->card[i]->name == "Slash" && cur_player->card[i]->isdel == false){
@@ -292,7 +365,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
 
                             //选择对ai2使用
                             connect(use2, &MyPushButton::clicked, [=](){
-                                 throwcard(cur_card);
+                                 throwcard(i,cur_player_idx);
                                  cur_card->Action(players[2]);
                                  for(int i = 0; i < cur_player->card_count; i++){
                                      if(cur_player->card[i]->name == "Slash" && cur_player->card[i]->isdel == false){
@@ -300,6 +373,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                                          cur_player->card[i]->mask->show();
                                      }
                                  }
+
                                  use1->hide();
                                  use2->hide();
                                  delete use1;
@@ -307,23 +381,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                             });
                         }
 
-                        //checkdying();//xly9:每次用牌之后，playscene都要检查是否有人挂了
-
-                        /*for(int i = 0; i < 3 ;i++){
-                            if(players[i]->hp <= 0){
-                                for(int j = 0;j<3;j++){
-                                    int k = (i + j) % 3;
-                                    //if(i==j) continue;
-                                    players[k]->be_asked_for_peach(cur_player);
-                                    if(cur_player->hp>0){
-                                        break;
-                                    }
-                                }
-                                if(cur_player->hp<=0){
-                                   sleep_forever(cur_player);
-                                }
-                            }
-                        }*/
+                        checkdying();//xly9:每次用牌之后，playscene都要检查是否有人挂了
 
                         for(int i = 0;i<3;i++){
                             Warrior * cur_player = players[i];
@@ -341,7 +399,6 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                                 }
                             });
                         }
-
                     }
                 });
             }
@@ -352,7 +409,6 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
     //以下是弃牌阶段
     connect(this,&playscene::madthrowcard,[=](){
 
-        qDebug()<<cur_player_idx<<"madthrowcard qi pai"<<endl;
 
         //yyx 显示是谁的回合
         QPixmap turn0(":/playscene/res/player0Turn.png");
@@ -370,6 +426,11 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
         cturn2->resize(turn2.size());
         cturn2->setPixmap(turn2);
 
+        QPixmap give_pic(":/playscene/res/AIThrowcards.png");
+        QLabel * cgivepic = new QLabel(this);
+        cgivepic->resize(give_pic.size());
+        cgivepic->setPixmap(give_pic);
+
         if(cur_player_idx == 0){
             cturn0->move(870,485);
             cturn0->show();
@@ -377,16 +438,22 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
         else if(cur_player_idx == 1){
             cturn1->move(145,310);
             cturn1->show();
+            cgivepic->move(145,345);
+            cgivepic->show();
             stop();
         }
         else if(cur_player_idx == 2){
             cturn2->move(770,200);
             cturn2->show();
+            cgivepic->move(805,200);
+            cgivepic->show();
             stop();
         }
 
         Warrior * cur_player = players[cur_player_idx];
         thrownum = cur_player->true_card_num - cur_player->hp;
+        qDebug()<<cur_player_idx<<"madthrowcard qi pai  "<<thrownum<<endl;
+        qDebug()<<"cur_player->true_card_num = "<<cur_player->true_card_num<<" cur_player->hp = "<<cur_player->hp<<endl;
         //thrownum是playscene的成员变量
         if(cur_player->is_AI){
             stop();
@@ -405,9 +472,11 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
             }
             else if(cur_player_idx == 1){
                 cturn1->hide();
+                cgivepic->hide();
             }
             else if(cur_player_idx == 2){
                 cturn2->hide();
+                cgivepic->hide();
             }
 
             //对手回合开始
@@ -415,6 +484,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
             delete cturn0;
             delete cturn1;
             delete cturn2;
+            delete cgivepic;
             emit gamestart();//新的gamestart，被新的槽函数捕捉
         }
         else{
@@ -432,7 +502,7 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
             connect(endthrow,&MyPushButton::clicked, [=](){//结束弃牌阶段的槽
                 if(thrownum<=0){
                     //删掉弃了的牌
-                    delcard();
+                    //delcard();
                     //隐藏按钮
                     endthrow->hide();
                     creminder->hide();
@@ -461,10 +531,11 @@ playscene::playscene(QString name1, QString name2, QString name3, int landlord, 
                 //设置弃牌事件
                 if(cur_player->card[i]->isdel == true) continue;
                 connect(cur_player->card[i], &Cards::clicked, [=](){
-                    //if(thrownum>0) {//没弃够数量的牌才能够弃牌，已经弃完了就不能再弃
+                    qDebug()<<cur_player_idx<<"   "<<thrownum<<endl;
+                    if(thrownum>0) {//没弃够数量的牌才能够弃牌，已经弃完了就不能再弃
                         thrownum--;
-                        throwcard(cur_player->card[i]);//负责处理相关牌的显示
-                    //}
+                        throwcard(i,cur_player_idx);//负责处理相关牌的显示
+                    }
                 });
             }
         }
@@ -490,27 +561,28 @@ void playscene::ArrowRainAction(){
         }
 }
 
-//XLY批注：弃牌函数和动画直接抄峰哥的了，因为我原来的版本没实现任何QT相关内容
 //弃牌函数，此处可以加动画（QPixmap或者QMovie或者QPainter）
 //yyx 改成三人版 添加牌数提示 还差出牌动画
-void playscene::throwcard(Cards * card){
-    Warrior * cur_player = card->owner;
-    cur_player->true_card_num--;
-    cur_player->setCardNum(cur_player->true_card_num);
-    card->isdel = true;
+void playscene::throwcard(int cardi,int player){
+    //Warrior * cur_player = card->owner;
+    players[player]->true_card_num--;
+    players[player]->setCardNum(players[player]->true_card_num);
+    players[player]->card[cardi]->isdel = true;
+    qDebug()<<"player"<<player<<"  card  "<<players[player]->card[cardi]->name<<players[player]->card[cardi]->isdel<<endl;
     //rather than: players[cur_player_idx];
-    card->move(400, 300);
-    card->show();
+    players[player]->card[cardi]->move(400, 300);
+    players[player]->card[cardi]->show();
     stop();
-    card->hide();
-    if(!cur_player->is_AI){
+    players[player]->card[cardi]->hide();
+    if(!players[player]->is_AI){
         //把这张牌删了
         //重新设置每张牌的位置
         //为什么要这样：如果在这直接del了那张牌，前面的connect就会出bug
-        for(int i=0,k=0; i<cur_player->card_count; i++){
-            if(cur_player->card[i]->isdel==false){
-                cur_player->card[i]->move(67+110*k,560);
-                cur_player->card[i]->show();
+        for(int i=0,k=0; i<players[player]->card_count; i++){
+            if(players[player]->card[i]->isdel==false){
+                players[player]->card[i]->move(67+110*k,560);
+                players[player]->card[i]->show();
+                qDebug() << players[player]->card[i]->name<<"   "<<k<<"  "<<i<<endl;
                 k++;
             }
         }
@@ -545,6 +617,8 @@ void playscene::delcard(){
             cur_player->setCardNum(cur_player->true_card_num);
             cur_player->card[i]->move(67+110*i,560);
             cur_player->card[i]->show();
+
+            qDebug() << cur_player->card[i]->name<<"   "<<i<<endl;
         }
     }
 }
@@ -554,83 +628,61 @@ void playscene::delcard(){
 void playscene::winning(bool if_player_win){
     //Warrior * cur_player = players[cur_player_idx];
     if(if_player_win){//玩家胜利 or 玩家的农民AI队友胜利
-        MyPushButton *trophy=new MyPushButton(this,true,":/playscene/res/trophy.png");
-        trophy->move((width()-trophy->width())*0.5,(height()-trophy->height())*0.5);
-        trophy->show();
-        //这里是设置胜利图像弹出来的动画，目前是跳出来，凯哥可以改改逝逝
-        QPropertyAnimation *tanime=new QPropertyAnimation(trophy,"geometry",this);
-        tanime->setStartValue(QRect((width()-trophy->width())*0.5,(height()-trophy->height())*0.5-50,trophy->width(),trophy->height()));
-        tanime->setEndValue(QRect((width()-trophy->width())*0.5,(height()-trophy->height())*0.5,trophy->width(),trophy->height()));
-        tanime->setEasingCurve(QEasingCurve::InBack);
-        tanime->setDuration(500);
-        tanime->start();
-        battelbgm->stop();
-        //单击奖杯事件
-        connect(trophy,&MyPushButton::clicked,[=](){
             //播放胜利音乐
-            winbgm = new QSound(":/playscene/res/winmusic.wav",this);
+            winbgm = new QSound(":/playscene/res/gameEnd.wav",this);
             winbgm->setLoops(1);
             winbgm->play();
             //单击1秒后弹出新窗口
             QTimer::singleShot(1000,[=](){ //这是一个计时器，1s后进入后面语句
-                //这里是新窗口的图像，凯哥可以改改逝逝
+                //这里是新窗口的图像
                 ShapedWindow* win=new ShapedWindow(this,":/playscene/res/WinWindow.png");
                 win->move((this->width()-win->width())*0.5,(this->height()-win->height())*0.5);
-                //这里是单击返回主菜单的按钮，凯哥可以改改逝逝
+                //这里是单击返回主菜单的按钮
                 MyPushButton* yes=new MyPushButton(win,true,":/playscene/res/yesButton2.png");
                 connect(yes,&MyPushButton::clicked,[=](){
                     emit mainmenu();
                 });
-                yes->move((win->width()-yes->width())*0.5-5,215);
+                yes->move((win->width()-yes->width())*0.5-5,405);
                 win->show();
             });
-        });
+        //});
     }
     else{//玩家失败
-        //这里是设置胜利图像，目前是铲子，凯哥可以改改逝逝
-        MyPushButton *trophy=new MyPushButton(this,true,":/playscene/res/Shovel.png");
-        trophy->move((width()-trophy->width())*0.5,(height()-trophy->height())*0.5);
-        trophy->show();
-        QPropertyAnimation *tanime=new QPropertyAnimation(trophy,"geometry",this);
-        tanime->setStartValue(QRect((width()-trophy->width())*0.5,(height()-trophy->height())*0.5-50,trophy->width(),trophy->height()));
-        tanime->setEndValue(QRect((width()-trophy->width())*0.5,(height()-trophy->height())*0.5,trophy->width(),trophy->height()));
-        tanime->setEasingCurve(QEasingCurve::InBack);
-        tanime->setDuration(500);
-        tanime->start();
-        battelbgm->stop();
-        connect(trophy,&MyPushButton::clicked,[=](){
-            winbgm = new QSound(":/playscene/res/winmusic.wav",this);
+            winbgm = new QSound(":/playscene/res/gameEnd.wav",this);
             winbgm->setLoops(1);
             winbgm->play();
             QTimer::singleShot(1000,[=](){
-                ShapedWindow* win=new ShapedWindow(this,":/playscene/res/WinWindow.png");
+                ShapedWindow* win=new ShapedWindow(this,":/playscene/res/trophy.png");
                 win->move((this->width()-win->width())*0.5,(this->height()-win->height())*0.5);
                 MyPushButton* yes=new MyPushButton(win,true,":/playscene/res/yesButton2.png");
                 connect(yes,&MyPushButton::clicked,[=](){
                     emit mainmenu();
                 });
-                yes->move((win->width()-yes->width())*0.5-5,215);
+                yes->move((win->width()-yes->width())*0.5-5,405);
                 win->show();
             });
-        });
+       // });
     }
 
     emit mainmenu();
 }
-
 //设置武将
 void playscene::sethero(QString name, int player){
     //xly：player(int)决定图片显示位置
         if(name=="ZhangFei") players[player] = new ZhangFei(player,this);
         if(name=="MaChao") players[player] = new MaChao(player,this);
-        //if(name=="") myhero = new //(player, this);
-        //if(name=="") myhero = new //(player, this);
-        //if(name=="") myhero = new //(player, this);
-        if(player == 0) players[player]->is_AI = false;
+        if(name=="CaoCao") players[player] = new CaoCao(player,this);
+        if(name=="CaoAng") players[player] = new CaoAng(player,this);
+        if(name=="DiaoChan") players[player] = new DiaoChan(player,this);
+
+        players[player]->player = player;
+        if(player == 0) {
+            players[player]->is_AI = false;
+        }
         else{
-            players[player]->player = player;
             players[player]->is_AI = true;
         }
+
 }
 
 //设置卡槽
@@ -643,19 +695,6 @@ void playscene::setcardshop(int player){
         mycardshop->move(300, 500);
         mycardshop->show();
     }
-    else{
-        /*QPixmap enemycardpic(":/playscene/res/Cardshop.png");
-        enemycardshop = new QLabel(this);
-        enemycardshop->resize(enemycardpic.size());
-        enemycardshop->setPixmap(enemycardpic);
-        enemycardshop->move(300, 100);
-        enemycardshop->show();*/
-        //players[player]->card_num_pic.load(":/playscene/res"+QString::number(players[player]->card_count)+".png");
-        //players[player]->setIcon((players[player]->card_num_pic));
-        //if(player == 0) move(210,510);
-        //else if(player == 2) move(210,110);
-        //else move(410,310);
-    }
 }
 
 //游戏背景
@@ -664,10 +703,10 @@ void playscene::paintEvent(QPaintEvent *event){
     //背景图像
     QImage bg(":/playscene/res/Background.jpg");
     bg=bg.scaled(size(),Qt::KeepAspectRatioByExpanding);
-    painter.drawImage(-250,0,bg);
+    painter.drawImage(0,0,bg);
 }
 
-//无用
+//
 void playscene::ask_for_peach(){//进入濒死阶段后，求桃🍑
     for(int i=1;i<3;i++){
         int cur_idx = (cur_player_idx+i)%3;
@@ -749,7 +788,7 @@ void playscene::sleep_forever(Warrior * player){//挂了之后，咋办
                 });
                 wantcards->move(40,210);
                 MyPushButton *wantlife = new MyPushButton(choosewindow,true,":/menu/res/CancelButton.png");
-                        //yyx 此处小bug 要通过合理演示避免
+
                 connect(wantlife, &MyPushButton::clicked, [=](){
                     if(players[0]->hp < players[0]->totalhp){
                         players[0]->hp += 1;
